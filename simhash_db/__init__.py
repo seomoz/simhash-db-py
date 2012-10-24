@@ -23,8 +23,12 @@ class BaseClient(object):
     def ranges(self, hsh):
         '''For a given hash, return a list of all the ranges that have to be
         searched in each of the tables'''
-        return [(hsh & t.search_mask, hsh | ((2 ** 64 - 1) ^ t.search_mask))
-            for t in self.corpus.tables]
+        permutations = self.permute(hsh)
+        return [(
+            permutations[i] & self.corpus.tables[i].search_mask,
+            permutations[i] | (
+                (2 ** 64 - 1) ^ self.corpus.tables[i].search_mask)
+        ) for i in range(len(permutations))]
 
     def permute(self, hsh):
         '''Return all the permutations of the provided hash'''

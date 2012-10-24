@@ -7,6 +7,11 @@ import struct
 from . import BaseClient
 
 
+def pack_as_signed(integer):
+    '''Convert an unsigned integer into a signed integer with the same bits'''
+    return struct.unpack('!q', struct.pack('!Q', integer))[0]
+
+
 class Client(BaseClient):
     '''Our Riak backend client'''
     def __init__(self, name, num_blocks, num_bits, *args, **kwargs):
@@ -14,15 +19,12 @@ class Client(BaseClient):
         kwargs['transport_class'] = riak.RiakPbcTransport
         kwargs['port'] = kwargs.get('port', 8087)
         self.client = riak.RiakClient(*args, **kwargs)
-        self.bucket_names = ['%s-%i' % (self.name, i) for i in range(
-            self.num_tables)]
-        self.buckets = [self.client.bucket(name) for name in self.bucket_names]
+        self.bucket = self.client.bucket(name)
 
     def delete(self):
         '''Delete this database of simhashes'''
-        for bucket in self.buckets:
-            for key in bucket.get_keys():
-                key.delete()
+        for key in self.bucket.get_keys():
+            self.bucket.get_binary(key).delete()
 
     def insert(self, hash_or_hashes):
         '''Insert one (or many) hashes into the database'''
@@ -32,9 +34,12 @@ class Client(BaseClient):
 
         for hsh in hashes:
             permutations = self.permute(hsh)
-            permutations = [struct.pack('!Q', p) for p in permutations]
+            obj = riak.RiakObject(self.client, self.bucket, str(hsh))
             for i in range(self.num_tables):
-                self.buckets[i].new_binary(permutations[i], '')
+                obj.add_index('%s_int' % str(i), permutations[i])
+            obj.set_content_type('application/simhash')
+            obj.set_encoded_data('')
+            obj.store()
 
     def find_one(self, hash_or_hashes):
         '''Find one near-duplicate for the provided query (or queries)'''
@@ -48,14 +53,10 @@ class Client(BaseClient):
             found = []
             for i in range(self.num_tables):
                 low, high = ranges[i]
-                low = struct.pack('!Q', low)
-                high = struct.pack('!Q', high)
-                bucket = self.bucket_names[i]
-                found = self.client.index(bucket, '$key', low, high).run()
-                found = [self.corpus.tables[i].unpermute(
-                    struct.unpack('!Q', f[0])[0]) for f in found]
+                found = [int(f._key) for f in self.client.index(
+                    self.name, '%s_int' % str(i), low, high).run()]
                 found = [f for f in found if
-                    self.corpus.distance(f, hsh) < self.num_bits]
+                    self.corpus.distance(hsh, f) < self.num_bits]
                 if found:
                     # If we found /anything/, we should return it immediately
                     results.append(found[0])
@@ -79,13 +80,12 @@ class Client(BaseClient):
             found = []
             for i in range(self.num_tables):
                 low, high = ranges[i]
-                low = struct.pack('!Q', low)
-                high = struct.pack('!Q', high)
-                bucket = self.bucket_names[i]
-                tmp = self.client.index(bucket, '$key', low, high).run()
-                tmp = [self.corpus.tables[i].unpermute(
-                    struct.unpack('!Q', f[0])[0]) for f in tmp]
+                found.extend([int(f._key) for f in self.client.index(
+                    self.name, '%s_int' % str(i), low, high).run()])
             found = list(set([f for f in found
                 if self.corpus.distance(f, hsh) < self.num_bits]))
             results.append(found)
+
+        if not hasattr(hash_or_hashes, '__iter__'):
+            return results[0]
         return results
