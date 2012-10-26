@@ -7,7 +7,7 @@ import time
 import psutil
 import random
 import argparse
-from simhash_db import Client
+from simhash_db import Client, GeneralException
 
 parser = argparse.ArgumentParser(description='Run benchmarks on simhash_db')
 parser.add_argument('--count', type=int, default=1000,
@@ -22,8 +22,19 @@ parser.add_argument('--num-bits', dest='num_bits', type=int, default=3,
     help='How many bits to configure the client to use')
 parser.add_argument('--backend', type=str, required=True,
     help='Which backend to use')
+parser.add_argument('--config', type=str, required=False,
+    help='Path to a yaml file with the host configuration')
 
 args = parser.parse_args()
+
+
+# If a configuration file was provided, we should use it
+if args.config:
+    from yaml import load
+    with open(args.config) as fin:
+        kwargs = load(fin.read())
+else:
+    kwargs = {}
 
 
 def make_seeds():
@@ -46,7 +57,8 @@ def make_seeds():
 def insert():
     '''Run the timing numbers for each of the provided seeds for insertion'''
     seeds = make_seeds()
-    client = Client(args.backend, args.name, args.num_blocks, args.num_bits)
+    client = Client(args.backend, args.name, args.num_blocks, args.num_bits,
+        **kwargs)
     for i in range(1000):
         if i % 25 == 0:
             print 'Inserting batch %i' % i
@@ -54,7 +66,7 @@ def insert():
         hashes = [(start + i * interval) for start, interval in seeds]
         try:
             results = client.insert(hashes)
-        except client.Exception as exc:
+        except GeneralException as exc:
             print '---> Client exception: %s' % repr(exc)
 
     # Since this is meant to be run in a subprocess...
@@ -64,7 +76,8 @@ def insert():
 def query():
     '''Run the timing numbers for each of the provided seeds for query all'''
     seeds = make_seeds()
-    client = Client(args.backend, args.name, args.num_blocks, args.num_bits)
+    client = Client(args.backend, args.name, args.num_blocks, args.num_bits,
+        **kwargs)
     for i in range(1000):
         if i % 25 == 0:
             print 'Querying batch %i' % i
@@ -72,7 +85,7 @@ def query():
         hashes = [(start + i * interval) for start, interval in seeds]
         try:
             results = client.find_all(hashes)
-        except client.Exception as exc:
+        except GeneralException as exc:
             print '---> Client exception: %s' % repr(exc)
 
 

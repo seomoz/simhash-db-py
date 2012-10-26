@@ -5,6 +5,11 @@
 import simhash
 
 
+class GeneralException(Exception):
+    '''Anything goes wrong'''
+    pass
+
+
 class BackendUnsupported(Exception):
     '''An error to throw if the provided backend is unsupported'''
     pass
