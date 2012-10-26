@@ -64,5 +64,8 @@ def Client(backend, num_blocks, num_bits, *args, **kwargs):
     elif backend == 'riak':
         from .riak_client import Client as RiakClient
         return RiakClient(num_blocks, num_bits, *args, **kwargs)
+    elif backend == 'judy':
+        from .judy_client import Client as JudyClient
+        return JudyClient(num_blocks, num_bits, *args, **kwargs)
     else:
         raise BackendUnsupported('The %s backend is not supported' % backend)
