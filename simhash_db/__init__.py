@@ -52,20 +52,20 @@ class BaseClient(object):
         pass
 
 
-def Client(backend, num_blocks, num_bits, *args, **kwargs):
+def Client(backend, name, num_blocks, num_bits, *args, **kwargs):
     '''A factory to return the appropriate client'''
     # Import the appropriate module
     if backend == 'cassandra':
         from .cassandra_client import Client as CassClient
-        return CassClient(num_blocks, num_bits, *args, **kwargs)
+        return CassClient(name, num_blocks, num_bits, *args, **kwargs)
     elif backend == 'mongo':
         from .mongo_client import Client as MongoClient
-        return MongoClient(num_blocks, num_bits, *args, **kwargs)
+        return MongoClient(name, num_blocks, num_bits, *args, **kwargs)
     elif backend == 'riak':
         from .riak_client import Client as RiakClient
-        return RiakClient(num_blocks, num_bits, *args, **kwargs)
+        return RiakClient(name, num_blocks, num_bits, *args, **kwargs)
     elif backend == 'judy':
         from .judy_client import Client as JudyClient
-        return JudyClient(num_blocks, num_bits, *args, **kwargs)
+        return JudyClient(name, num_blocks, num_bits, *args, **kwargs)
     else:
         raise BackendUnsupported('The %s backend is not supported' % backend)
