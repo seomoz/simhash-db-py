@@ -53,8 +53,8 @@ class Client(BaseClient):
             found = []
             for i in range(self.num_tables):
                 low, high = ranges[i]
-                found = [int(f._key) for f in self.client.index(
-                    self.name, '%s_int' % str(i), low, high).run()]
+                found = [int(f) for f in self.bucket.get_index(
+                    '%s_int' % str(i), low, high)]
                 found = [f for f in found if
                     self.corpus.distance(hsh, f) < self.num_bits]
                 if found:
@@ -80,8 +80,8 @@ class Client(BaseClient):
             found = []
             for i in range(self.num_tables):
                 low, high = ranges[i]
-                found.extend([int(f._key) for f in self.client.index(
-                    self.name, '%s_int' % str(i), low, high).run()])
+                found.extend([int(f) for f in self.bucket.get_index(
+                    '%s_int' % str(i), low, high)])
             found = list(set([f for f in found
                 if self.corpus.distance(f, hsh) < self.num_bits]))
             results.append(found)
