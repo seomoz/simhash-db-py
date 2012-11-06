@@ -2,8 +2,19 @@
 
 '''Our code to connect to the Riak backend'''
 
+import struct
 import pymongo
 from . import BaseClient
+
+
+def unsigned_to_signed(integer):
+    '''Convert an unsigned integer into a signed integer with the same bits'''
+    return struct.unpack('!q', struct.pack('!Q', integer))[0]
+
+
+def signed_to_unsigned(integer):
+    '''Convert an unsigned integer into a signed integer with the same bits'''
+    return struct.unpack('!Q', struct.pack('!q', integer))[0]    
 
 
 class Client(BaseClient):
@@ -30,20 +41,24 @@ class Client(BaseClient):
 
         # Construct the docs, and then we'll do an insert
         docs = [
-            dict((str(i), int(self.corpus.tables[i].permute(hsh)))
-                for i in range(self.num_tables)) for hsh in hashes
+            dict((
+                str(i),
+                unsigned_to_signed(int(self.corpus.tables[i].permute(hsh)))
+            ) for i in range(self.num_tables)) for hsh in hashes
         ]
         # And now insert them
         self.docs.insert(docs)
 
     def find_in_table(self, hsh, table_num, ranges):
         '''Return all the results found in this particular table'''
+        low = unsigned_to_signed(ranges[table_num][0])
+        high = unsigned_to_signed(ranges[table_num][1])
         results = self.docs.find({str(table_num): {
-            '$gt': ranges[table_num][0],
-            '$lt': ranges[table_num][1]
+            '$gt': low,
+            '$lt': high
         }})
         results = [self.corpus.tables[table_num].unpermute(
-            int(d[str(table_num)])) for d in results]
+            signed_to_unsigned(int(d[str(table_num)]))) for d in results]
         return [h for h in results if
             self.corpus.distance(h, hsh) < self.num_bits]
 
