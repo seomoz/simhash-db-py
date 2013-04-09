@@ -1,6 +1,9 @@
 #! /usr/bin/env python
 
-'''Our code to connect to the Riak backend'''
+'''Our code to connect to the MongoDB backend'''
+
+from gevent import monkey
+monkey.patch_all()
 
 import struct
 import pymongo
