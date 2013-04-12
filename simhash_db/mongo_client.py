@@ -14,7 +14,6 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import dateutil.parser
 
-pymongo.common.VALIDATORS['days'] = pymongo.common.validate_positive_integer
 pymongo.common.VALIDATORS['months'] = pymongo.common.validate_positive_integer
 
 
