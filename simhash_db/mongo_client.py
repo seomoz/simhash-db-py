@@ -8,6 +8,13 @@ monkey.patch_all()
 import struct
 import pymongo
 from . import BaseClient
+import calendar
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import dateutil.parser
+
+pymongo.common.VALIDATORS['days'] = pymongo.common.validate_positive_integer
+pymongo.common.VALIDATORS['months'] = pymongo.common.validate_positive_integer
 
 
 def unsigned_to_signed(integer):
@@ -24,9 +31,21 @@ class Client(BaseClient):
     '''Our Mongo backend client'''
     def __init__(self, name, num_blocks, num_bits, *args, **kwargs):
         BaseClient.__init__(self, name, num_blocks, num_bits)
+        self.months = kwargs.pop('months', None)
         self.client = pymongo.Connection(*args, **kwargs)
-        self.name = name
-        self.docs = getattr(self.client, name).documents
+        self.namePrefix = name + '-'
+        if self.months is None:
+            self.names = [name]
+            self.docsList = [getattr(self.client, name).documents]
+        else:
+            today = datetime.now()
+            self.names = [self.namePrefix
+                          + (today -
+                             relativedelta(months=i)).strftime(
+                                 '%Y-%m')
+                          for i in range(self.months)]
+            self.docsList = [getattr(self.client, n).documents
+                             for n in self.names]
 
         # Create the indexes (if they exist it's ok)
         for i in range(self.num_tables):
@@ -34,7 +53,23 @@ class Client(BaseClient):
 
     def delete(self):
         '''Delete this database of simhashes'''
-        self.client.drop_database(self.name)
+        for name in self.names:
+            self.client.drop_database(name)
+
+    def delete_old(self):
+        '''Delete data that's older than the retention period.'''
+        if self.months is None:
+            return
+
+        names = self.client.database_names()
+        today = datetime.now()
+        cutoff = today - relativedelta(months=self.months)
+        for name in names:
+            if name.startswith(self.namePrefix):
+                dbDateString = name[len(self.namePrefix):]
+                dbDate = dateutil.parser.parse(dbDateString)
+                if dbDate < cutoff:
+                    self.client.drop_database(name)
 
     def insert(self, hash_or_hashes):
         '''Insert one (or many) hashes into the database'''
