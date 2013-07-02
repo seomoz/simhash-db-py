@@ -11,7 +11,7 @@ class MongoTest(BaseTest, unittest.TestCase):
     '''Test the Mongo client'''
     def setUp(self):
         self.client = Client('mongo', 'testing', 6, 3, host='localhost',
-                             months=3)
+                             weeks=3)
 
     def tearDown(self):
         self.client.delete()

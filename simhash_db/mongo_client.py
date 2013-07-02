@@ -15,6 +15,7 @@ from dateutil.relativedelta import relativedelta
 import dateutil.parser
 
 pymongo.common.VALIDATORS['months'] = pymongo.common.validate_positive_integer
+pymongo.common.VALIDATORS['weeks'] = pymongo.common.validate_positive_integer
 
 
 def unsigned_to_signed(integer):
@@ -32,11 +33,27 @@ class Client(BaseClient):
     def __init__(self, name, num_blocks, num_bits, *args, **kwargs):
         BaseClient.__init__(self, name, num_blocks, num_bits)
         self.months = kwargs.pop('months', None)
+        self.weeks = kwargs.pop('weeks', None)
+        if (self.months is not None) and (self.weeks is not None):
+            raise ValueError
+
         self.client = pymongo.Connection(*args, **kwargs)
         self.namePrefix = name + '-'
-        if self.months is None:
+
+        if (self.months is None) and (self.weeks is None):
             self.names = [name]
             self.docsList = [getattr(self.client, name).documents]
+        elif self.weeks is not None:
+            today = datetime.now()
+            wd = today.weekday()
+            self.names = [self.namePrefix
+                          + (today -
+                             relativedelta(weeks=i) -
+                             relativedelta(days=wd)).strftime(
+                                 '%Y-%m-%d')
+                          for i in range(self.weeks)]
+            self.docsList = [getattr(self.client, n).documents
+                             for n in self.names]
         else:
             today = datetime.now()
             self.names = [self.namePrefix
@@ -59,18 +76,27 @@ class Client(BaseClient):
 
     def delete_old(self):
         '''Delete data that's older than the retention period.'''
-        if self.months is None:
-            return
-
         names = self.client.database_names()
         today = datetime.now()
-        cutoff = today - relativedelta(months=self.months)
-        for name in names:
-            if name.startswith(self.namePrefix):
-                dbDateString = name[len(self.namePrefix):]
-                dbDate = dateutil.parser.parse(dbDateString)
-                if dbDate < cutoff:
-                    self.client.drop_database(name)
+        if self.months is not None:
+            cutoff = today - relativedelta(months=self.months)
+            for name in names:
+                if name.startswith(self.namePrefix):
+                    dbDateString = name[len(self.namePrefix):]
+                    dbDate = dateutil.parser.parse(dbDateString)
+                    if dbDate < cutoff:
+                        self.client.drop_database(name)
+        elif self.weeks is not None:
+            wd = today.weekday()
+            cutoff = (today -
+                      relativedelta(weeks=self.weeks) -
+                      relativedelta(days=wd))
+            for name in names:
+                if name.startswith(self.namePrefix):
+                    dbDateString = name[len(self.namePrefix):]
+                    dbDate = dateutil.parser.parse(dbDateString)
+                    if dbDate < cutoff:
+                        self.client.drop_database(name)
 
     def insert(self, hash_or_hashes):
         '''Insert one (or many) hashes into the database'''
