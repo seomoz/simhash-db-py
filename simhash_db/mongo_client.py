@@ -82,7 +82,7 @@ class Client(BaseClient):
             cutoff = today - relativedelta(months=self.months)
             for name in names:
                 if name.startswith(self.namePrefix):
-                    dbDateString = name[len(self.namePrefix):]
+                    dbDateString = name[len(self.namePrefix):] + '-01'
                     dbDate = dateutil.parser.parse(dbDateString)
                     if dbDate < cutoff:
                         self.client.drop_database(name)
