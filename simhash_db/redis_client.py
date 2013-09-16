@@ -7,16 +7,6 @@ import struct
 from . import BaseClient
 
 
-def unsigned_to_signed(integer):
-    '''Convert an unsigned integer into a signed integer with the same bits'''
-    return struct.unpack('!q', struct.pack('!Q', integer))[0]
-
-
-def signed_to_unsigned(integer):
-    '''Convert an unsigned integer into a signed integer with the same bits'''
-    return struct.unpack('!Q', struct.pack('!q', integer))[0]
-
-
 class Client(BaseClient):
     '''Our Mongo backend client'''
     def __init__(self, name, num_blocks, num_bits, *args, **kwargs):
