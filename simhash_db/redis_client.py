@@ -41,7 +41,7 @@ class Client(BaseClient):
         results = [struct.unpack('!Q', h)[0] for h in
             self.client.zrangebyscore(name, low, high)]
         return [h for h in results if
-            self.corpus.distance(h, hsh) <= self.num_bits]
+            self.corpus.distance(h, hsh) < self.num_bits]
 
     def find_one(self, hash_or_hashes):
         '''Find one near-duplicate for the provided query (or queries)'''
