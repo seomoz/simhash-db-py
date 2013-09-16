@@ -8,7 +8,7 @@ from simhash_db import Client
 
 class BaseTest(object):
     def setUp(self):
-        self.client = None
+        self.client = self.make_client('testing', 6, 3)
 
     def tearDown(self):
         self.client.delete()
@@ -61,3 +61,13 @@ class BaseTest(object):
 
         # And make sure we find nothing
         self.assertEqual(self.client.find_one(1), None)
+
+    def test_exact(self):
+        '''Make sure that we can support exact match'''
+        self.client.delete()
+        self.client = self.make_client('testing', 1, 0)
+
+        hashes = [1, 2, 4, 8, 16, 32]
+        self.client.insert(hashes)
+        for hsh in hashes:
+            self.assertEqual(set(self.client.find_all(hsh)), set([hsh]))

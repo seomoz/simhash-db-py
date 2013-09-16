@@ -8,12 +8,10 @@ from simhash_db import Client
 
 
 class RedisTest(BaseTest, unittest.TestCase):
-    '''Test the Mongo client'''
-    def setUp(self):
-        self.client = Client('redis', 'testing', 6, 3)
+    '''Test the Redis client'''
+    def make_client(self, name, num_blocks, num_bits):
+        return Client('redis', name, num_blocks, num_bits)
 
-    def tearDown(self):
-        self.client.delete()
 
 if __name__ == '__main__':
     unittest.main()

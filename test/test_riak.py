@@ -6,13 +6,12 @@ import unittest
 from test import BaseTest
 from simhash_db import Client
 
+
 class RiakTest(BaseTest, unittest.TestCase):
     '''Test the Riak client'''
-    def setUp(self):
-        self.client = Client('riak', 'testing', 6, 3)
+    def make_client(self, name, num_blocks, num_bits):
+        return Client('riak', name, num_blocks, num_bits)
 
-    def tearDown(self):
-        self.client.delete()
 
 if __name__ == '__main__':
     unittest.main()
