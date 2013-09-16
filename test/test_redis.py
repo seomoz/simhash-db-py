@@ -12,5 +12,6 @@ class RedisTest(BaseTest, unittest.TestCase):
     def make_client(self, name, num_blocks, num_bits):
         return Client('redis', name, num_blocks, num_bits)
 
+
 if __name__ == '__main__':
     unittest.main()
