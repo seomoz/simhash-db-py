@@ -7,6 +7,7 @@ monkey.patch_all()
 
 import struct
 import pymongo
+from pymongo import common
 from . import BaseClient
 import calendar
 from datetime import datetime
@@ -24,7 +25,7 @@ def unsigned_to_signed(integer):
 
 def signed_to_unsigned(integer):
     '''Convert an unsigned integer into a signed integer with the same bits'''
-    return struct.unpack('!Q', struct.pack('!q', integer))[0]    
+    return struct.unpack('!Q', struct.pack('!q', integer))[0]
 
 
 class Client(BaseClient):
@@ -64,8 +65,9 @@ class Client(BaseClient):
                              for n in self.names]
 
         # Create the indexes (if they exist it's ok)
-        for i in range(self.num_tables):
-            self.docs.create_index(str(i), pymongo.ASCENDING)
+        for j in range(len(self.names)):
+            for i in range(self.num_tables):
+                self.docsList[j].create_index(str(i), pymongo.ASCENDING)
 
     def delete(self):
         '''Delete this database of simhashes'''
@@ -80,7 +82,7 @@ class Client(BaseClient):
             cutoff = today - relativedelta(months=self.months)
             for name in names:
                 if name.startswith(self.namePrefix):
-                    dbDateString = name[len(self.namePrefix):]
+                    dbDateString = name[len(self.namePrefix):] + '-01'
                     dbDate = dateutil.parser.parse(dbDateString)
                     if dbDate < cutoff:
                         self.client.drop_database(name)
@@ -110,20 +112,20 @@ class Client(BaseClient):
             ) for i in range(self.num_tables)) for hsh in hashes
         ]
         # And now insert them
-        self.docs.insert(docs)
+        self.docsList[0].insert(docs)
 
-    def find_in_table(self, hsh, table_num, ranges):
+    def find_in_table(self, docs, hsh, table_num, ranges):
         '''Return all the results found in this particular table'''
         low = unsigned_to_signed(ranges[table_num][0])
         high = unsigned_to_signed(ranges[table_num][1])
-        results = self.docs.find({str(table_num): {
+        results = docs.find({str(table_num): {
             '$gt': low,
             '$lt': high
         }})
         results = [self.corpus.tables[table_num].unpermute(
             signed_to_unsigned(int(d[str(table_num)]))) for d in results]
         return [h for h in results if
-            self.corpus.distance(h, hsh) < self.num_bits]
+                self.corpus.distance(h, hsh) < self.num_bits]
 
     def find_one(self, hash_or_hashes):
         '''Find one near-duplicate for the provided query (or queries)'''
@@ -135,10 +137,13 @@ class Client(BaseClient):
         for hsh in hashes:
             ranges = self.ranges(hsh)
             found = []
-            for i in range(self.num_tables):
-                found = self.find_in_table(hsh, i, ranges)
+            for docs in self.docsList:
+                for i in range(self.num_tables):
+                    found = self.find_in_table(docs, hsh, i, ranges)
+                    if found:
+                        results.append(found[0])
+                        break
                 if found:
-                    results.append(found[0])
                     break
             if not found:
                 results.append(None)
@@ -157,8 +162,9 @@ class Client(BaseClient):
         for hsh in hashes:
             ranges = self.ranges(hsh)
             found = []
-            for i in range(self.num_tables):
-                found.extend(self.find_in_table(hsh, i, ranges))
+            for docs in self.docsList:
+                for i in range(self.num_tables):
+                    found.extend(self.find_in_table(docs, hsh, i, ranges))
             found = list(set(found))
             results.append(found)
 
