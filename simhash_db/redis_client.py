@@ -62,7 +62,8 @@ class Client(BaseClient):
         if self.retention_seconds > 0 and not self.expiration_set:
             for num in range(self.num_tables):
                 name = '%s.%s' % (self.names[0], num)
-                self.client.expire(name, 1000 * self.retention_seconds)
+                if self.client.ttl(name) <= 0:
+                    self.client.expire(name, 1000 * self.retention_seconds)
                 self.expiration_set = True
 
         with self.client.pipeline() as pipe:
