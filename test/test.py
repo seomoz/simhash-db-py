@@ -20,12 +20,12 @@ class BaseTest(object):
 
         # When giving a single query, we should get a single response back.
         # If we provide a list, then we should get a list back
-        self.assertEqual(self.client.find_one( 1 ),  1 )
+        self.assertEqual(self.client.find_one(1), 1)
         self.assertEqual(self.client.find_one([1]), [1])
 
         # If we ask for a set of items that do not have near-duplicates, we
         # should get None's back
-        self.assertEqual(self.client.find_one( 31 ),  None )
+        self.assertEqual(self.client.find_one(31), None)
         self.assertEqual(self.client.find_one([31]), [None])
 
         # And now we should insert an array and expect to see all the results
