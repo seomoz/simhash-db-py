@@ -67,5 +67,8 @@ def Client(backend, name, num_blocks, num_bits, *args, **kwargs):
     elif backend == 'judy':
         from .judy_client import Client as JudyClient
         return JudyClient(name, num_blocks, num_bits, *args, **kwargs)
+    elif backend == 'redis':
+        from .redis_client import Client as RedisClient
+        return RedisClient(name, num_blocks, num_bits, *args, **kwargs)
     else:
         raise BackendUnsupported('The %s backend is not supported' % backend)
