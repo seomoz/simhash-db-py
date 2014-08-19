@@ -70,5 +70,8 @@ def Client(backend, name, num_blocks, num_bits, *args, **kwargs):
     elif backend == 'redis':
         from .redis_client import Client as RedisClient
         return RedisClient(name, num_blocks, num_bits, *args, **kwargs)
+    elif backend == 'hbase':
+        from .hbase_client import Client as HbaseClient
+        return HbaseClient(name, num_blocks, num_bits, *args, **kwargs)
     else:
         raise BackendUnsupported('The %s backend is not supported' % backend)
