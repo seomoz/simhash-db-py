@@ -26,8 +26,8 @@ class Client(BaseClient):
         # Time to live in seconds
         ttl = kwargs.pop('ttl', 3600 * 24 * 93)
         self.connection = happybase.Connection(**kwargs)
-        families = dict([(column_name(i), dict(time_to_live=ttl))
-                         for i in range(self.num_tables)])
+        families = {column_name(i): dict(time_to_live=ttl)
+                    for i in range(self.num_tables)}
         try:
             self.connection.create_table(name, families)
         except happybase.hbase.ttypes.AlreadyExists:
