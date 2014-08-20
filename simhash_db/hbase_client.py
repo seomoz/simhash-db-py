@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
-'''Our code to connect to the MongoDB backend'''
+'''Our code to connect to the HBase backend. It uses the happybase
+package, which depends on the Thrift service that (for now) is
+part of HBase.'''
 
 from gevent import monkey
 monkey.patch_all()
