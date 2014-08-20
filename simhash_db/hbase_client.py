@@ -24,7 +24,10 @@ class Client(BaseClient):
         BaseClient.__init__(self, name, num_blocks, num_bits)
 
         # Time to live in seconds
-        ttl = kwargs.pop('ttl', 3600 * 24 * 93)
+        ttl = kwargs.pop('ttl', None)
+        if ttl is None:
+            raise ValueError
+
         self.connection = happybase.Connection(**kwargs)
         families = {column_name(i): dict(time_to_live=ttl)
                     for i in range(self.num_tables)}
