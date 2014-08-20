@@ -19,7 +19,7 @@ def column_name(integer):
 
 
 class Client(BaseClient):
-    '''Our Mongo backend client'''
+    '''Our HBase backend client'''
     def __init__(self, name, num_blocks, num_bits, *args, **kwargs):
         BaseClient.__init__(self, name, num_blocks, num_bits)
 
