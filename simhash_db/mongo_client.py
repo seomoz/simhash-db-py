@@ -119,13 +119,13 @@ class Client(BaseClient):
         low = unsigned_to_signed(ranges[table_num][0])
         high = unsigned_to_signed(ranges[table_num][1])
         results = docs.find({str(table_num): {
-            '$gt': low,
-            '$lt': high
+            '$gte': low,
+            '$lte': high
         }})
         results = [self.corpus.tables[table_num].unpermute(
             signed_to_unsigned(int(d[str(table_num)]))) for d in results]
         return [h for h in results if
-                self.corpus.distance(h, hsh) < self.num_bits]
+                self.corpus.distance(h, hsh) <= self.num_bits]
 
     def find_one(self, hash_or_hashes):
         '''Find one near-duplicate for the provided query (or queries)'''
