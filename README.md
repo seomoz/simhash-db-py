@@ -1,3 +1,33 @@
+* *Status:* Production
+
+* *Main purpose:* A data access layer that takes Simhash keys,
+permutes them appropriately, and stores them or looks up near-
+matches in any of a variety of databases.
+
+* *Also known as:* N/A
+
+* *Team:* Big Data
+
+* *Main Contact:* Maura Hubbell
+
+* *Scope:* internal
+
+* *Products*: Fresh Web Explorer, Fresh Web Alerts, Moz Mentions,
+OSE Mentions
+
+* *Replaces*: N/A
+
+* *Open Source*: No
+
+* *Open Source Dependencies*:
+simhash
+gevent
+happybase
+pymongo
+redis
+riak
+
+
 Inserting and Querying Simhashes
 ================================
 Rather than take the time to build a data store as described in the Google
