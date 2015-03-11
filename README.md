@@ -1,4 +1,16 @@
-* *Status:* Production
+Inserting and Querying Simhashes
+================================
+Rather than take the time to build a data store as described in the Google
+paper on efficient simhash querying, we wanted to use an existing database
+to accomplish the same thing. To this end, we were willing to take a slight
+performance hit to avoid having to spend the development time working on a
+more performant solution.
+
+![Status: Production](https://img.shields.io/badge/status-production-green.svg?style=flat)
+![Team: Big Data](https://img.shields.io/badge/team-big_data-green.svg?style=flat)
+![Scope: External](https://img.shields.io/badge/scope-external-green.svg?style=flat)
+![Open Source: Yes](https://img.shields.io/badge/open_source-MIT-green.svg?style=flat)
+![Critical: Yes](https://img.shields.io/badge/critical-yes-red.svg?style=flat)
 
 * *Main purpose:* A data access layer that takes Simhash keys,
 permutes them appropriately, and stores them or looks up near-
@@ -6,18 +18,12 @@ matches in any of a variety of databases.
 
 * *Also known as:* N/A
 
-* *Team:* Big Data
-
 * *Main Contact:* Maura Hubbell
-
-* *Scope:* internal
 
 * *Products*: Fresh Web Explorer, Fresh Web Alerts, Moz Mentions,
 OSE Mentions
 
 * *Replaces*: N/A
-
-* *Open Source*: No
 
 * *Open Source Dependencies*:
 simhash
@@ -26,15 +32,6 @@ happybase
 pymongo
 redis
 riak
-
-
-Inserting and Querying Simhashes
-================================
-Rather than take the time to build a data store as described in the Google
-paper on efficient simhash querying, we wanted to use an existing database
-to accomplish the same thing. To this end, we were willing to take a slight
-performance hit to avoid having to spend the development time working on a
-more performant solution.
 
 Backends
 ========
