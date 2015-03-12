@@ -12,27 +12,6 @@ more performant solution.
 ![Open Source: Yes](https://img.shields.io/badge/open_source-MIT-green.svg?style=flat)
 ![Critical: Yes](https://img.shields.io/badge/critical-yes-red.svg?style=flat)
 
-* *Main purpose:* A data access layer that takes Simhash keys,
-permutes them appropriately, and stores them or looks up near-
-matches in any of a variety of databases.
-
-* *Also known as:* N/A
-
-* *Main Contact:* Maura Hubbell
-
-* *Products*: Fresh Web Explorer, Fresh Web Alerts, Moz Mentions,
-OSE Mentions
-
-* *Replaces*: N/A
-
-* *Open Source Dependencies*:
-simhash
-gevent
-happybase
-pymongo
-redis
-riak
-
 Backends
 ========
 We tried a few backends, including `cassandra`, `mongodb` and `riak`. Because
