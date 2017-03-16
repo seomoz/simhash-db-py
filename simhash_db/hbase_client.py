@@ -9,7 +9,7 @@ monkey.patch_all()
 
 import struct
 import happybase
-import happybase.hbase.ttypes
+import Hbase_thrift
 from . import BaseClient
 
 
@@ -33,7 +33,7 @@ class Client(BaseClient):
                     for i in range(self.num_tables)}
         try:
             self.connection.create_table(name, families)
-        except happybase.hbase.ttypes.AlreadyExists:
+        except Hbase_thrift.AlreadyExists:
             pass
         self.table = self.connection.table(name)
 
